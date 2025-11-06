@@ -6,10 +6,18 @@ import cookieParser from "cookie-parser";
 import { connectDB } from "./db.js";
 import { User } from "../Models/User.js";
 
+import path from "path";
+import { fileURLToPath } from "url";
+
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const frontendDir = path.join(__dirname, "../../Frontend");
+
 const dev = process.env.NODE_ENV !== "production";
-const app = next({ dev });
+const app = next({ dev, dir: frontendDir }); 
 const handle = app.getRequestHandler();
 const PORT = process.env.PORT || 3000;
 

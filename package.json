@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node src/lib/server.js",
-    "seed": "node src/lib/seedUsers.js",
+    "dev": "node src/backend/lib/server.js",
+    "seed": "node src/backend/lib/seedUsers.js",
     "build": "next build",
-    "start": "NODE_ENV=production node src/lib/server.js",
+    "start": "NODE_ENV=production node src/backend/lib/server.js",
     "lint": "eslint"
   },
   "dependencies": {
