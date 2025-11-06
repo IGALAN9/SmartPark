@@ -44,7 +44,8 @@ router.get("/:id", async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (e) {
-    res.status(400).json({ error: "Invalid id" });
+    console.error("Error:", e);
+    res.status(500).json({ error: "Failed to list users" });
   }
 });
 
@@ -77,6 +78,28 @@ router.post("/", async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(400).json({ error: e.message });
+  }
+});
+
+// POST /api/users/login { email, password }
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body ?? {};
+    if (!email || !password) return res.status(400).json({ error: "Email & password required" });
+
+    // ambil password (field select:false di schema)
+    const user = await User.findOne({ email: String(email).toLowerCase().trim() }).select("+password");
+    if (!user) return res.status(401).json({ error: "Invalid credentials" });
+
+    const ok = await bcrypt.compare(String(password), user.password);
+    if (!ok) return res.status(401).json({ error: "Invalid credentials" });
+
+    // kirim user tanpa password
+    const json = user.toJSON(); delete json.password;
+    res.json({ ok: true, user: json });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Login failed" });
   }
 });
 
@@ -122,7 +145,8 @@ router.delete("/:id", async (req, res) => {
     if (!deleted) return res.status(404).json({ error: "User not found" });
     res.json({ ok: true });
   } catch (e) {
-    res.status(400).json({ error: "Failed to delete user" });
+    console.error("Error:", e);
+    res.status(500).json({ error: "Failed to delete user" });
   }
 });
 

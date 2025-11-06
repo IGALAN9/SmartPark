@@ -1,21 +1,32 @@
-type User = { _id: string; name: string; email: string };
+import Link from "next/link";
+import Navbar from "../components/Navbar";
 
-export default async function Home() {
-  const res = await fetch("http://localhost:3000/api/users", { cache: "no-store" });
-  const data = await res.json().catch(() => ({}));
-  const users = Array.isArray(data.items) ? data.items : Array.isArray(data) ? data : [];
-
+export default function Home() {
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Users List</h1>
-      <ul className="space-y-2">
-        {users.map((u: User) => (
-          <li key={u._id} className="rounded border p-3">
-            <div className="font-semibold">{u.name}</div>
-            <div className="text-sm opacity-70">{u.email}</div>
-          </li>
-        ))}
-      </ul>
-    </main>
+    <>
+      <Navbar />
+      <main className="mx-auto max-w-6xl px-4">
+        <section className="relative mt-20 mb-28">
+          <div className="absolute inset-0 rounded-3xl bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] 
+                          from-indigo-200 via-white to-indigo-100/40 -z-10" />
+          <div className="flex flex-col items-center text-center py-24">
+            <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-indigo-600">
+              Welcome to SMARTPARK
+            </h1>
+            <p className="mt-4 text-lg text-zinc-600">
+              Your solution to parking
+            </p>
+            <div className="mt-8 flex gap-3">
+              <Link href="/register" className="px-5 py-3 rounded-full bg-indigo-600 text-white font-medium hover:opacity-90">
+                Get Started
+              </Link>
+              <Link href="/login" className="px-5 py-3 rounded-full bg-white text-indigo-700 font-medium shadow hover:bg-zinc-50">
+                Login
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
   );
 }
