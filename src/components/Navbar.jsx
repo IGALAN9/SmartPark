@@ -6,7 +6,7 @@ import Link from "next/link";
 export default function Navbar() {
   const [user, setUser] = useState(null);          
   const [isCardOpen, setIsCardOpen] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   
@@ -30,8 +30,22 @@ export default function Navbar() {
     return () => window.removeEventListener("auth:changed", onAuth);
   }, []);
 
-  const handleLogout = () => {
-    try { localStorage.removeItem("user"); } catch {}
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/users/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (err) {
+      console.error("Logout API call failed", err);
+    }
+
+    try {
+      localStorage.removeItem("user");
+    } catch {}
+
+    window.location.href = "/";
+    
     setUser(null);
     setIsCardOpen(false);
   };
@@ -49,7 +63,6 @@ export default function Navbar() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Gagal menghapus akun.");
 
-      // sukses: bersihkan sisi client
       try { localStorage.removeItem("user"); } catch {}
       setUser(null);
       setOpen(false);

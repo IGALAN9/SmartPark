@@ -19,8 +19,11 @@ const seedUsers = async () => {
     { name: "Ayu Rahma", email: "ayu@example.com", password: "ayu123", role: "user" }
     ];
 
-    // 3. insert ke DB
-    await User.insertMany(users);
+    // 3. insert ke DB --- GANTI BAGIAN INI ---
+    // GANTI DARI: await User.insertMany(users);
+    // MENJADI:
+    await User.create(users);
+    
     console.log("Data user sudah ditambahkan.");
 
     process.exit(0);
