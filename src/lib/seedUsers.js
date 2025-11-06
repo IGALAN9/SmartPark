@@ -14,15 +14,16 @@ const seedUsers = async () => {
 
     // 2. buat data dummy
     const users = [
-      { name: "Galang Pratama", email: "galang@example.com" },
-      { name: "Ayu Rahma", email: "ayu@example.com" },
-      { name: "Rizky Saputra", email: "rizky@example.com" },
-      { name: "Siti Nurhaliza", email: "siti@example.com" },
-      { name: "Budi Santoso", email: "budi@example.com" }
+    { name: "Admin Utama", email: "admin@example.com", password: "admin123", role: "admin" },
+    { name: "Galang Pratama", email: "galang@example.com", password: "galang123", role: "user" },
+    { name: "Ayu Rahma", email: "ayu@example.com", password: "ayu123", role: "user" }
     ];
 
-    // 3. insert ke DB
-    await User.insertMany(users);
+    // 3. insert ke DB --- GANTI BAGIAN INI ---
+    // GANTI DARI: await User.insertMany(users);
+    // MENJADI:
+    await User.create(users);
+    
     console.log("Data user sudah ditambahkan.");
 
     process.exit(0);

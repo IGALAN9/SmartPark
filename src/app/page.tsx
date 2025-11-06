@@ -1,20 +1,53 @@
-type User = { _id: string; name: string; email: string };
+"use client";
 
-export default async function Home() {
-  const res = await fetch("http://localhost:3000/api/users", { cache: "no-store" });
-  const users: User[] = await res.json();
+import { useEffect, useState } from "react";
+import Navbar from "../components/Navbar";
+
+import GuestLanding from "../components/home/GuestLanding";
+import UserDashboard from "../components/home/UserDashboard";
+import AdminDashboard from "../components/home/AdminDashboard";
+
+type AppUser = {
+  _id: string;
+  name: string;
+  email: string;
+  role?: "user" | "admin";
+};
+
+export default function HomePage() {
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/users/me", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setUser(d?.user ?? null))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const renderContent = () => {
+    if (loading) {
+      return <div className="text-gray-500 animate-pulse">Loading...</div>;
+    }
+
+    if (!user) {
+      return <GuestLanding />;
+    }
+
+    if (user.role === "admin") {
+      return <AdminDashboard user={user} />;
+    }
+
+    return <UserDashboard user={user} />;
+  };
 
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Users List</h1>
-      <ul className="space-y-2">
-        {users.map((u: User) => (
-          <li key={u._id} className="rounded border p-3">
-            <div className="font-semibold">{u.name}</div>
-            <div className="text-sm opacity-70">{u.email}</div>
-          </li>
-        ))}
-      </ul>
-    </main>
+    <>
+      <Navbar />
+      <main className="min-h-screen flex flex-col items-center justify-center px-4">
+        {renderContent()}
+      </main>
+    </>
   );
 }
