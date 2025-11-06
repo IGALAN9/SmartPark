@@ -3,6 +3,7 @@ import express from "express";
 import validator from "validator";
 import bcrypt from "bcryptjs";
 import { User } from "../../Models/User.js";
+import mongoose from "mongoose";
 
 const router = express.Router();
 
@@ -140,12 +141,24 @@ router.patch("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const query = isNumeric(id) ? { user_id: Number(id) } : { _id: id };
-    const deleted = await User.findOneAndDelete(query);
+
+    // numeric user_id
+    if (/^\d+$/.test(String(id))) {
+      const deleted = await User.findOneAndDelete({ user_id: Number(id) });
+      if (!deleted) return res.status(404).json({ error: "User not found" });
+      return res.json({ ok: true });
+    }
+
+    // mongo _id
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ error: "Invalid user id" });
+    }
+    const deleted = await User.findByIdAndDelete(id);
     if (!deleted) return res.status(404).json({ error: "User not found" });
+
     res.json({ ok: true });
   } catch (e) {
-    console.error("Error:", e);
+    console.error("DELETE /users/:id error:", e);
     res.status(500).json({ error: "Failed to delete user" });
   }
 });

@@ -23,10 +23,10 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Register failed");
-      router.push("/Login");
+      router.push("/login");
     } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        setErr(msg); // contoh di login/register
+        setErr(msg); 
     } finally {
         setLoading(false);
     }
@@ -77,7 +77,7 @@ export default function RegisterPage() {
 
           <p className="mt-6 text-center text-sm text-zinc-600">
             Already have an account?{" "}
-            <a href="/Login" className="text-indigo-600 font-medium hover:underline">Login</a>
+            <a href="/login" className="text-indigo-600 font-medium hover:underline">Login</a>
           </p>
         </div>
       </main>

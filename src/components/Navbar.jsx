@@ -6,6 +6,7 @@ import Link from "next/link";
 export default function Navbar() {
   const [user, setUser] = useState(null);          
   const [isCardOpen, setIsCardOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   
@@ -37,22 +38,24 @@ export default function Navbar() {
 
   const handleDeleteAccount = async () => {
     if (!user) return;
-    if (!confirm("Yakin hapus akun secara permanen?")) return;
+    if (!confirm("Yakin hapus akun secara permanen? Tindakan ini tidak bisa dibatalkan.")) return;
 
     setDeleting(true);
     try {
-      const id = user._id ?? user.user_id ?? user.id;
+      const id = user?._id ?? user?.user_id ?? user?.id;
+      if (!id) throw new Error("User ID tidak ditemukan.");
+
       const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal menghapus akun");
-      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Gagal menghapus akun.");
+
+      // sukses: bersihkan sisi client
       try { localStorage.removeItem("user"); } catch {}
       setUser(null);
-      setIsCardOpen(false);
+      setOpen(false);
       alert("Akun kamu sudah dihapus.");
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Gagal menghapus akun");
+      alert(e instanceof Error ? e.message : "Gagal menghapus akun.");
     } finally {
       setDeleting(false);
     }
