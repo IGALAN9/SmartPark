@@ -1,6 +1,7 @@
 import express from "express";
 import next from "next";
 import dotenv from "dotenv";
+import usersRouter from "./routes/users.js";
 import { connectDB } from "./db.js";
 import { User } from "../Models/User.js";
 
@@ -16,6 +17,7 @@ app.prepare().then(async () => {
 
   const server = express();
   server.use(express.json());
+  server.use("/api/users", usersRouter);
 
   // === API Routes ===
   server.get("/api/users", async (req, res) => {

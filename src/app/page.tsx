@@ -2,7 +2,8 @@ type User = { _id: string; name: string; email: string };
 
 export default async function Home() {
   const res = await fetch("http://localhost:3000/api/users", { cache: "no-store" });
-  const users: User[] = await res.json();
+  const data = await res.json().catch(() => ({}));
+  const users = Array.isArray(data.items) ? data.items : Array.isArray(data) ? data : [];
 
   return (
     <main className="p-6">
