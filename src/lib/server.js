@@ -2,6 +2,7 @@ import express from "express";
 import next from "next";
 import dotenv from "dotenv";
 import usersRouter from "./routes/users.js";
+import cookieParser from "cookie-parser";
 import { connectDB } from "./db.js";
 import { User } from "../Models/User.js";
 
@@ -17,6 +18,7 @@ app.prepare().then(async () => {
 
   const server = express();
   server.use(express.json());
+  server.use(cookieParser());
   server.use("/api/users", usersRouter);
 
   // === API Routes ===
@@ -27,16 +29,6 @@ app.prepare().then(async () => {
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "Failed to fetch users" });
-    }
-  });
-
-  server.post("/api/users", async (req, res) => {
-    try {
-      const { name, email } = req.body;
-      const newUser = await User.create({ name, email });
-      res.status(201).json(newUser);
-    } catch (err) {
-      res.status(400).json({ error: err.message });
     }
   });
 

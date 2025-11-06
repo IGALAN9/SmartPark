@@ -26,7 +26,7 @@ export default function LoginPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Login failed");
 
-      setName(data.name); // Ganti `user` ke `name`
+      setName(data.name); 
       localStorage.setItem("user", JSON.stringify(data.user));
       window.dispatchEvent(new Event("auth:changed")); 
       router.push("/");
