@@ -1,8 +1,6 @@
-// Frontend/app/components/AdminDashboard.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-// Kita akan buat file ini di langkah berikutnya
 import AddMallModal from "./admin/AddMallModal"; 
 
 // Definisikan tipe data yang akan kita terima dari API
@@ -30,7 +28,7 @@ type AdminDashboardProps = {
 export default function AdminDashboard({ user }: AdminDashboardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMallId, setEditingMallId] = useState<string | null>(null);
-  
+  const [isDeleting, setIsDeleting] = useState(false); // BARU: State untuk disable tombol
   // State untuk menampung data dari API
   const [malls, setMalls] = useState<MallData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,6 +61,51 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     setIsModalOpen(false);
     fetchMalls(); // Ambil ulang data setelah berhasil menambah mall
     alert("Mall berhasil ditambahkan!");
+  };
+
+  const handleDeleteMall = async (mallId: string, mallName: string) => {
+    if (!window.confirm(`Yakin ingin menghapus "${mallName}"?\nSEMUA lantai dan slot di dalamnya akan terhapus permanen.`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/malls/${mallId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Gagal menghapus mall");
+      }
+      alert(`"${mallName}" berhasil dihapus.`);
+      fetchMalls(); // Refresh list
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Terjadi kesalahan");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // ----------------------------------------------------
+  // FUNGSI BARU: Hapus Floor (Lot)
+  // ----------------------------------------------------
+  const handleDeleteFloor = async (floorId: string, floorName: string) => {
+    if (!window.confirm(`Yakin ingin menghapus "${floorName}"?\nSEMUA slot di dalamnya akan terhapus permanen.`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/parking-lots/${floorId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Gagal menghapus lantai");
+      }
+      alert(`"${floorName}" berhasil dihapus.`);
+      fetchMalls(); // Refresh list
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Terjadi kesalahan");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (loading) return <div className="text-center p-8 text-lg">Memuat data parkir...</div>;
@@ -104,6 +147,14 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
               >
                 {editingMallId === mall.id ? "Close" : "Details>>>"}
               </button>
+              {/* --- TOMBOL DELETE MALL BARU --- */}
+              <button
+                  onClick={() => handleDeleteMall(mall.id, mall.name)}
+                  disabled={isDeleting}
+                  className="px-5 py-2 bg-red-100 text-red-700 rounded-full font-medium text-sm hover:bg-red-200 disabled:opacity-50"
+               >
+                Delete
+              </button>
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-200">
@@ -127,6 +178,14 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                     <button className="px-4 py-1 bg-white text-indigo-700 rounded-full text-sm shadow-sm hover:bg-gray-50">
                       Edit
                     </button>
+                    {/* --- TOMBOL DELETE FLOOR BARU --- */}
+                      <button
+                        onClick={() => handleDeleteFloor(floor.id, floor.name)}
+                        disabled={isDeleting}
+                        className="px-4 py-1 bg-white text-red-700 rounded-full text-sm shadow-sm hover:bg-red-100 disabled:opacity-50"
+                      >
+                        Delete
+                      </button>
                   </div>
                 ))}
                 {/* TODO: Buat logika Add Floor */}

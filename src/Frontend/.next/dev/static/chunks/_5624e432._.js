@@ -592,14 +592,12 @@ if (typeof globalThis.$RefreshHelpers$ === 'object' && globalThis.$RefreshHelper
 "[project]/src/Frontend/components/home/AdminDashboard.tsx [app-client] (ecmascript)", ((__turbopack_context__) => {
 "use strict";
 
-// Frontend/app/components/AdminDashboard.tsx
 __turbopack_context__.s([
     "default",
     ()=>AdminDashboard
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
-// Kita akan buat file ini di langkah berikutnya
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$Frontend$2f$components$2f$home$2f$admin$2f$AddMallModal$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/Frontend/components/home/admin/AddMallModal.tsx [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
@@ -610,6 +608,7 @@ function AdminDashboard({ user }) {
     _s();
     const [isModalOpen, setIsModalOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [editingMallId, setEditingMallId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [isDeleting, setIsDeleting] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false); // BARU: State untuk disable tombol
     // State untuk menampung data dari API
     const [malls, setMalls] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
     const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
@@ -642,12 +641,57 @@ function AdminDashboard({ user }) {
         fetchMalls(); // Ambil ulang data setelah berhasil menambah mall
         alert("Mall berhasil ditambahkan!");
     };
+    const handleDeleteMall = async (mallId, mallName)=>{
+        if (!window.confirm(`Yakin ingin menghapus "${mallName}"?\nSEMUA lantai dan slot di dalamnya akan terhapus permanen.`)) {
+            return;
+        }
+        setIsDeleting(true);
+        try {
+            const res_0 = await fetch(`/api/malls/${mallId}`, {
+                method: "DELETE"
+            });
+            if (!res_0.ok) {
+                const data_0 = await res_0.json().catch(()=>({}));
+                throw new Error(data_0.error || "Gagal menghapus mall");
+            }
+            alert(`"${mallName}" berhasil dihapus.`);
+            fetchMalls(); // Refresh list
+        } catch (e_0) {
+            alert(e_0 instanceof Error ? e_0.message : "Terjadi kesalahan");
+        } finally{
+            setIsDeleting(false);
+        }
+    };
+    // ----------------------------------------------------
+    // FUNGSI BARU: Hapus Floor (Lot)
+    // ----------------------------------------------------
+    const handleDeleteFloor = async (floorId, floorName)=>{
+        if (!window.confirm(`Yakin ingin menghapus "${floorName}"?\nSEMUA slot di dalamnya akan terhapus permanen.`)) {
+            return;
+        }
+        setIsDeleting(true);
+        try {
+            const res_1 = await fetch(`/api/parking-lots/${floorId}`, {
+                method: "DELETE"
+            });
+            if (!res_1.ok) {
+                const data_1 = await res_1.json().catch(()=>({}));
+                throw new Error(data_1.error || "Gagal menghapus lantai");
+            }
+            alert(`"${floorName}" berhasil dihapus.`);
+            fetchMalls(); // Refresh list
+        } catch (e_1) {
+            alert(e_1 instanceof Error ? e_1.message : "Terjadi kesalahan");
+        } finally{
+            setIsDeleting(false);
+        }
+    };
     if (loading) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "text-center p-8 text-lg",
         children: "Memuat data parkir..."
     }, void 0, false, {
         fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-        lineNumber: 66,
+        lineNumber: 110,
         columnNumber: 23
     }, this);
     if (error) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -658,7 +702,7 @@ function AdminDashboard({ user }) {
         ]
     }, void 0, true, {
         fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-        lineNumber: 67,
+        lineNumber: 111,
         columnNumber: 21
     }, this);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -669,7 +713,7 @@ function AdminDashboard({ user }) {
                 children: "Available Parking"
             }, void 0, false, {
                 fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                lineNumber: 70,
+                lineNumber: 114,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -680,12 +724,12 @@ function AdminDashboard({ user }) {
                     children: "ADD MALL"
                 }, void 0, false, {
                     fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                    lineNumber: 76,
+                    lineNumber: 120,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                lineNumber: 75,
+                lineNumber: 119,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -696,7 +740,7 @@ function AdminDashboard({ user }) {
                         children: "Belum ada mall terdaftar. Klik ADD MALL untuk memulai."
                     }, void 0, false, {
                         fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                        lineNumber: 83,
+                        lineNumber: 127,
                         columnNumber: 32
                     }, this),
                     malls.map((mall)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -712,7 +756,7 @@ function AdminDashboard({ user }) {
                                                     children: mall.name
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                                    lineNumber: 88,
+                                                    lineNumber: 132,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -720,13 +764,13 @@ function AdminDashboard({ user }) {
                                                     children: mall.address
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                                    lineNumber: 89,
+                                                    lineNumber: 133,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                            lineNumber: 87,
+                                            lineNumber: 131,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -735,13 +779,23 @@ function AdminDashboard({ user }) {
                                             children: editingMallId === mall.id ? "Close" : "Details>>>"
                                         }, void 0, false, {
                                             fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                            lineNumber: 91,
+                                            lineNumber: 135,
+                                            columnNumber: 15
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                            onClick: ()=>handleDeleteMall(mall.id, mall.name),
+                                            disabled: isDeleting,
+                                            className: "px-5 py-2 bg-red-100 text-red-700 rounded-full font-medium text-sm hover:bg-red-200 disabled:opacity-50",
+                                            children: "Delete"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
+                                            lineNumber: 139,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                    lineNumber: 86,
+                                    lineNumber: 130,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -762,30 +816,30 @@ function AdminDashboard({ user }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                                        lineNumber: 99,
+                                                        lineNumber: 147,
                                                         columnNumber: 34
                                                     }, this)
                                                 ]
                                             }, floor.id, true, {
                                                 fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                                lineNumber: 98,
+                                                lineNumber: 146,
                                                 columnNumber: 68
                                             }, this)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                             className: "text-sm text-gray-500",
                                             children: "Belum ada lantai terdaftar."
                                         }, void 0, false, {
                                             fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                            lineNumber: 100,
+                                            lineNumber: 148,
                                             columnNumber: 30
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                        lineNumber: 97,
+                                        lineNumber: 145,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                    lineNumber: 96,
+                                    lineNumber: 144,
                                     columnNumber: 13
                                 }, this),
                                 editingMallId === mall.id && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -806,7 +860,7 @@ function AdminDashboard({ user }) {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                                        lineNumber: 107,
+                                                        lineNumber: 155,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -814,13 +868,23 @@ function AdminDashboard({ user }) {
                                                         children: "Edit"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                                        lineNumber: 108,
+                                                        lineNumber: 156,
                                                         columnNumber: 21
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                        onClick: ()=>handleDeleteFloor(floor_0.id, floor_0.name),
+                                                        disabled: isDeleting,
+                                                        className: "px-4 py-1 bg-white text-red-700 rounded-full text-sm shadow-sm hover:bg-red-100 disabled:opacity-50",
+                                                        children: "Delete"
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
+                                                        lineNumber: 160,
+                                                        columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, floor_0.id, true, {
                                                 fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                                lineNumber: 106,
+                                                lineNumber: 154,
                                                 columnNumber: 45
                                             }, this)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -828,25 +892,25 @@ function AdminDashboard({ user }) {
                                             children: "Add Floor"
                                         }, void 0, false, {
                                             fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                            lineNumber: 113,
+                                            lineNumber: 165,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                                    lineNumber: 105,
+                                    lineNumber: 153,
                                     columnNumber: 43
                                 }, this)
                             ]
                         }, mall.id, true, {
                             fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                            lineNumber: 85,
+                            lineNumber: 129,
                             columnNumber: 28
                         }, this))
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                lineNumber: 82,
+                lineNumber: 126,
                 columnNumber: 7
             }, this),
             isModalOpen && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$Frontend$2f$components$2f$home$2f$admin$2f$AddMallModal$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -854,17 +918,17 @@ function AdminDashboard({ user }) {
                 onSuccess: handleAddMallSuccess
             }, void 0, false, {
                 fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-                lineNumber: 121,
+                lineNumber: 173,
                 columnNumber: 23
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/Frontend/components/home/AdminDashboard.tsx",
-        lineNumber: 68,
+        lineNumber: 112,
         columnNumber: 10
     }, this);
 }
-_s(AdminDashboard, "l82wRIH35GptOhaS7etAuoTDW2g=");
+_s(AdminDashboard, "T/ujYYRzhl2VAWAQmTNSEjt0LwI=");
 _c = AdminDashboard;
 var _c;
 __turbopack_context__.k.register(_c, "AdminDashboard");

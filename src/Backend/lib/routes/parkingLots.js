@@ -14,8 +14,6 @@ router.post("/", isAdmin, async (req, res) => {
     if (!mallId || !floorLevel) {
       return res.status(400).json({ error: "mallId and floorLevel are required" });
     }
-
-    // Cek apakah admin ini pemilik mall-nya
     const mall = await Mall.findOne({ _id: mallId, admin: req.user._id });
     if (!mall) {
       return res.status(404).json({ error: "Mall not found or you are not the owner" });
@@ -28,15 +26,46 @@ router.post("/", isAdmin, async (req, res) => {
 
     res.status(201).json(newLot);
   } catch (e) {
-    if (e.code === 11000) { // Error duplikat (dari index unik)
+    if (e.code === 11000) { 
       return res.status(409).json({ error: "This floor level already exists in this mall" });
     }
     res.status(400).json({ error: e.message });
   }
 });
 
-// Anda bisa tambahkan endpoint lain di sini
-// (Misal: POST /api/parking-slots untuk menambah slot ke lot)
-// (Misal: GET /api/parking-lots/:mallId untuk lihat semua lot di 1 mall)
+// ----------------------------------------------------
+// KODE BARU: DELETE /api/parking-lots/:id
+// Menghapus Lot (Lantai) DAN semua Slot di dalamnya
+// ----------------------------------------------------
+router.delete("/:id", isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params; 
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ error: "Invalid Lot ID" });
+    }
+
+    const lotToDelete = await ParkingLot.findById(id);
+    if (!lotToDelete) {
+      return res.status(404).json({ error: "Parking lot not found" });
+    }
+
+    const parentMall = await Mall.findOne({ 
+      _id: lotToDelete.mall, 
+      admin: req.user._id 
+    });
+    if (!parentMall) {
+      return res.status(403).json({ error: "Forbidden: You do not own this mall" });
+    }
+
+    await ParkingSlot.deleteMany({ lot: id });
+
+    await ParkingLot.findByIdAndDelete(id);
+
+    res.json({ ok: true, message: "Lot and all associated slots deleted" });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to delete lot" });
+  }
+});
+
 
 export default router;
