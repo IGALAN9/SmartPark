@@ -22,7 +22,7 @@ terintegrasi dengan backend dan frontend yang berjalan di satu server Node.js. B
 Empat model utama terdiri dari arsitektur data: User, Mall, ParkingLot (lantai), dan ParkingSlot (slot individu). Logika bisnis dibagi menurut peran. Administrasi memiliki kontrol penuh atas semua data parkir, termasuk membuat dan menghapus tampilan dasbor analitik. Sebaliknya, user hanya dapat melihat ketersediaan parkir dan API membatasi mereka untuk melakukan satu booking di seluruh sistem.
 ```
 
-![Database Schema](./public/ERD%20SmartPark.png)
+![Database Schema](./public/ERD%20SmartPark12.png)
 
 ## Technology Choices
 

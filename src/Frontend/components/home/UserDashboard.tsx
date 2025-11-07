@@ -90,7 +90,6 @@ export default function UserDashboard({ user }: UserDashboardProps) {
 
         {malls.map((mall) => (
           <div key={mall.id} className="bg-white p-6 rounded-2xl shadow-md">
-            {/* Header Card Mall */}
             <div className="flex flex-col sm:flex-row justify-between sm:items-center">
               <div>
                 <h3 className="text-2xl font-bold text-indigo-700">{mall.name}</h3>
@@ -104,14 +103,11 @@ export default function UserDashboard({ user }: UserDashboardProps) {
               </button>
             </div>
 
-            {/* Info Lantai (Ringkasan) */}
             <div className="mt-4 pt-4 border-t border-gray-200">
               <div className="flex flex-wrap gap-x-6 gap-y-2">
-                {/* ... (Tampilan ringkasan lantai - tidak berubah) ... */}
               </div>
             </div>
 
-            {/* Panel "Book" (muncul saat "Details" diklik) */}
             {openMallId === mall.id && (
               <div className="mt-4 pt-4 border-t border-indigo-200 bg-indigo-50 p-4 rounded-lg">
                 {mall.floors.length > 0 ? mall.floors.map((floor) => (
@@ -123,7 +119,6 @@ export default function UserDashboard({ user }: UserDashboardProps) {
                       </span>
                     </span>
                     
-                    {/* 6. TOMBOL INI SEKARANG PINDAH KE DETAIL VIEW */}
                     <button
                       onClick={() => setViewingFloor({
                         id: floor.id,
