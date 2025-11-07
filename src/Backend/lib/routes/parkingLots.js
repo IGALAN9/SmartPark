@@ -1,5 +1,6 @@
 import express from "express";
 import { ParkingLot } from "../../Models/parkinglot.js";
+import { ParkingSlot } from "../../Models/parkingslot.js";
 import { Mall } from "../../Models/Mall.js";
 import { isAdmin } from "../Middleware/auth.js";
 import mongoose from "mongoose";
