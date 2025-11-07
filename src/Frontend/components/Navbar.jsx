@@ -6,7 +6,6 @@ import Link from "next/link";
 export default function Navbar() {
   const [user, setUser] = useState(null);          
   const [isCardOpen, setIsCardOpen] = useState(false);
-  const [setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   
@@ -65,7 +64,7 @@ export default function Navbar() {
 
       try { localStorage.removeItem("user"); } catch {}
       setUser(null);
-      setOpen(false);
+      setIsCardOpen(false); 
       alert("Akun kamu sudah dihapus.");
     } catch (e) {
       alert(e instanceof Error ? e.message : "Gagal menghapus akun.");
