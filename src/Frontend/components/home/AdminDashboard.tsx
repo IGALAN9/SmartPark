@@ -10,7 +10,6 @@ type FloorData = {
   available: number;
   total: number;
 };
-
 type MallData = {
   id: string;
   name: string;
@@ -31,14 +30,15 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     floorName: string;
   } | null>(null);
   
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingMallId, setEditingMallId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [editingMallId, setEditingMallId] = useState<string | null>(null); 
   const [malls, setMalls] = useState<MallData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false); 
 
-  // --- Fungsi API untuk Fitur Parkir ---
+
+  // Fetch daftar mall dari API
   const fetchMalls = async () => {
     setLoading(true);
     setError("");
@@ -56,29 +56,30 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     }
   };
 
-  // Fetch data mall saat komponen dimount
   useEffect(() => {
     if (!viewingFloor) {
       fetchMalls();
     }
   }, [viewingFloor]); 
 
+  // Menangani sukses penambahan mall
   const handleAddMallSuccess = () => {
     setIsModalOpen(false);
-    fetchMalls(); 
+    fetchMalls(); // Ambil ulang data
     alert("Mall berhasil ditambahkan!");
   };
 
+  // Menangani penghapusan Mall (beserta cascade)
   const handleDeleteMall = async (mallId: string, mallName: string) => {
     if (!window.confirm(`Yakin ingin menghapus "${mallName}"?\nSEMUA lantai dan slot di dalamnya akan terhapus permanen.`)) {
       return;
     }
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/malls/${mallId}`, { method: "DELETE" });
+      const res = await fetch(`/api/malls/${mallId}`, { method: "DELETE" }); //
       if (!res.ok) throw new Error("Gagal menghapus mall");
       alert(`"${mallName}" berhasil dihapus.`);
-      fetchMalls(); // Refresh list
+      fetchMalls(); 
     } catch (e) {
       alert(e instanceof Error ? e.message : "Terjadi kesalahan");
     } finally {
@@ -86,14 +87,14 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     }
   };
 
-  // Fungsi untuk menghapus lantai
+  // Menangani penghapusan Floor
   const handleDeleteFloor = async (floorId: string, floorName: string) => {
     if (!window.confirm(`Yakin ingin menghapus "${floorName}"?\nSEMUA slot di dalamnya akan terhapus permanen.`)) {
       return;
     }
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/parking-lots/${floorId}`, { method: "DELETE" });
+      const res = await fetch(`/api/parking-lots/${floorId}`, { method: "DELETE" }); //
       if (!res.ok) throw new Error("Gagal menghapus lantai");
       alert(`"${floorName}" berhasil dihapus.`);
       fetchMalls(); 
@@ -104,7 +105,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     }
   };
 
-  // Fungsi untuk menambahkan lantai dengan nama otomatis
+  // Menangani penambahan Floor otomatis
   const handleAutoAddFloor = async (mall: MallData) => {
     setIsDeleting(true); 
     
@@ -112,7 +113,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     const newFloorName = `Floor ${nextFloorNum}`;
 
     try {
-      const res = await fetch("/api/parking-lots", {
+      const res = await fetch("/api/parking-lots", { //
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -123,15 +124,13 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
 
       const data = await res.json();
       if (!res.ok) {
-        // Tangani jika nama duplikat (misal: admin hapus "Floor 2" lalu "Add Floor" lagi)
         if (data.error && data.error.includes("already exists")) {
-          alert(`Gagal: Lantai dengan nama "${newFloorName}" sudah ada. Coba ubah nama lantai yang ada.`);
+          alert(`Gagal: Lantai dengan nama "${newFloorName}" sudah ada.`);
         } else {
           throw new Error(data.error || "Gagal menambahkan lantai");
         }
       } else {
-        // Refresh list mall untuk melihat lantai baru 
-        fetchMalls();
+        fetchMalls(); 
       }
     } catch (e) {
       alert(e instanceof Error ? e.message : "Terjadi kesalahan");
@@ -140,19 +139,15 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     }
   };
 
-
   if (viewingFloor) {
     return (
       <FloorDetailView 
         floor={viewingFloor}
-        onBack={() => {
-          setViewingFloor(null); 
-        }}
+        onBack={() => setViewingFloor(null)} 
       />
     );
   }
 
-  // --- Render Dashboard Admin ---
   return (
     <div className="w-full max-w-4xl mx-auto py-8 px-4 space-y-8">
       
@@ -164,15 +159,13 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4">
           <a
-            href="/admin/reports"
+            href="./reports"
             className="px-5 py-2 bg-indigo-50 text-indigo-700 rounded-full hover:bg-indigo-100"
           >
             Lihat Laporan
           </a>
         </div>
       </div>
-
-      <hr className="border-gray-300" />
 
       <div>
         <h2 className="text-3xl font-bold text-center text-indigo-600 mb-6">
@@ -263,13 +256,13 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                         </div>
                       </div>
                     ))}
-                  <button 
-                    onClick={() => handleAutoAddFloor(mall)} 
-                    className="mt-3 w-full px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium hover:bg-indigo-700"
-                    disabled={isDeleting} 
-                  >
-                    {isDeleting ? "Adding..." : "Add Floor"}
-                  </button>
+                    <button 
+                      onClick={() => handleAutoAddFloor(mall)}
+                      className="mt-3 w-full px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium hover:bg-indigo-700"
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? "Processing..." : "Add Floor"}
+                    </button>
                   </div>
                 )}
               </div>
