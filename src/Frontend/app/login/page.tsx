@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Navbar from "../../components/Navbar";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -38,6 +39,8 @@ export default function LoginPage() {
   }
 
   return (
+    <>
+      <Navbar />
     <main className="mx-auto max-w-xl px-4 py-6">
       <h1 className="text-4xl font-extrabold text-center text-indigo-600">Login</h1>
       <form onSubmit={handleLogin} className="mt-8 space-y-5">
@@ -78,5 +81,6 @@ export default function LoginPage() {
         <a href="/register" className="text-indigo-600 font-medium hover:underline">Register</a>
       </p>
     </main>
+    </>
   );
 }

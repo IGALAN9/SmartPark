@@ -176,12 +176,6 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4">
           <a
-            href="/admin/users"
-            className="px-5 py-2 bg-indigo-600 text-white rounded-full hover:opacity-90"
-          >
-            Kelola Pengguna
-          </a>
-          <a
             href="/admin/reports"
             className="px-5 py-2 bg-indigo-50 text-indigo-700 rounded-full hover:bg-indigo-100"
           >

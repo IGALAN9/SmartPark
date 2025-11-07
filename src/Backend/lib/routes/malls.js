@@ -39,7 +39,7 @@ router.get("/", isAdmin, async (req, res) => {
     }));
 
     res.json(data);
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Failed to fetch malls" });
   }
 });
@@ -78,7 +78,7 @@ router.get("/public", isLoggedIn, async (req, res) => {
     }));
 
     res.json(data);
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Failed to fetch public malls" });
   }
 });
@@ -137,7 +137,7 @@ router.delete("/:id", isAdmin, async (req, res) => {
     await Mall.findByIdAndDelete(id);
 
     res.json({ ok: true, message: "Mall and all associated data deleted" });
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Failed to delete mall" });
   }
 });

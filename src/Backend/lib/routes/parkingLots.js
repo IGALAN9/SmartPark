@@ -63,7 +63,7 @@ router.delete("/:id", isAdmin, async (req, res) => {
     await ParkingLot.findByIdAndDelete(id);
 
     res.json({ ok: true, message: "Lot and all associated slots deleted" });
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Failed to delete lot" });
   }
 });

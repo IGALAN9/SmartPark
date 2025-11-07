@@ -23,7 +23,7 @@ const isLotOwner = async (req, res, next) => {
     
     req.lot = lot; // Simpan lot di request untuk dipakai di handler
     next();
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Middleware error" });
   }
 };
@@ -34,7 +34,7 @@ router.get("/", isAdmin, isLotOwner, async (req, res) => {
   try {
     const slots = await ParkingSlot.find({ lot: req.lot._id }).sort({ slot_code: 1 });
     res.json(slots);
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Failed to get slots" });
   }
 });
@@ -60,7 +60,7 @@ router.get("/public", isLoggedIn, async (req, res) => {
     }));
 
     res.json(slotsWithMyStatus);
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Failed to get slots" });
   }
 });
@@ -83,7 +83,7 @@ router.post("/", isAdmin, isLotOwner, async (req, res) => {
       status: "Available",
     });
     res.status(201).json(newSlot);
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Failed to create slot" });
   }
 });
@@ -105,7 +105,7 @@ router.patch("/:id/book", isLoggedIn, async (req, res) => {
     await slot.save();
 
     res.json(slot);
-  } catch (e) {
+  } catch{
     res.status(500).json({ error: "Booking failed" });
   }
 });
@@ -123,7 +123,7 @@ router.delete("/:id", isAdmin, async (req, res) => {
     if (!deleted) return res.status(404).json({ error: "Slot not found" });
     
     res.json({ ok: true });
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Failed to delete slot" });
   }
 });
@@ -149,7 +149,7 @@ router.patch("/:id/status", isAdmin, async (req, res) => {
     if (!updated) return res.status(404).json({ error: "Slot not found" });
     
     res.json(updated);
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Failed to update status" });
   }
 });
@@ -178,7 +178,7 @@ router.patch("/:id/unbook", isLoggedIn, async (req, res) => {
     await slot.save();
 
     res.json(slot);
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Unbooking failed" });
   }
 });
