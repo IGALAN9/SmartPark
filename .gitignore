@@ -3,7 +3,7 @@
 # dependencies
 /node_modules
 /.next
-/src/Frontend/.next/dev
+/src/Frontend/.next
 /.pnp
 .pnp.*
 .yarn/*
