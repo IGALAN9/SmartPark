@@ -1,28 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
+// Pastikan komponen modal ini ada di folder yang sama
 import UpdateSlotModal from "./UpdateSlotModal"; 
 
+// Tipe data untuk 1 slot
 type Slot = {
   _id: string;
   slot_code: string;
   status: "Available" | "Booked" | "Occupied";
 };
 
-
+// Props yang diterima dari AdminDashboard
 type FloorDetailProps = {
   floor: {
-    id: string; 
+    id: string; // Ini adalah lotId
     mallName: string;
     floorName: string;
   };
-  onBack: () => void; 
+  onBack: () => void; // Fungsi untuk kembali
 };
 
 export default function FloorDetailView({ floor, onBack }: FloorDetailProps) {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // State untuk melacak slot mana yang dipilih untuk modal
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
 
   /**
@@ -42,6 +45,7 @@ export default function FloorDetailView({ floor, onBack }: FloorDetailProps) {
     }
   };
 
+  // Ambil data saat komponen pertama kali dimuat
   useEffect(() => {
     fetchSlots();
   }, [floor.id]);
@@ -57,7 +61,7 @@ export default function FloorDetailView({ floor, onBack }: FloorDetailProps) {
         body: JSON.stringify({ lotId: floor.id }),
       });
       if (!res.ok) throw new Error("Gagal menambah slot");
-      fetchSlots(); 
+      fetchSlots(); // Refresh data untuk menampilkan slot baru
     } catch (e) {
       alert(e instanceof Error ? e.message : "Terjadi kesalahan");
     }
@@ -79,6 +83,9 @@ export default function FloorDetailView({ floor, onBack }: FloorDetailProps) {
     }
   };
 
+  /**
+   * Mengembalikan class warna Tailwind berdasarkan status slot
+   */
   const getStatusColor = (status: Slot["status"]) => {
     switch (status) {
       case "Available": return "bg-green-500 hover:bg-green-600";
@@ -101,15 +108,6 @@ export default function FloorDetailView({ floor, onBack }: FloorDetailProps) {
     setSelectedSlot(null);
     fetchSlots(); // Refresh grid
   };
-  
-  // --- Logic untuk membagi 'slots' menjadi grup-grup (pilar) ---
-  const slotGroups = [];
-  if (slots.length > 0) {
-    for (let i = 0; i < slots.length; i += 3) {
-      // Potong array per 3 item
-      slotGroups.push(slots.slice(i, i + 3));
-    }
-  }
 
   return (
     <div className="w-full max-w-4xl mx-auto py-8 px-4">
@@ -144,38 +142,35 @@ export default function FloorDetailView({ floor, onBack }: FloorDetailProps) {
       {loading && <p className="text-center">Loading slots...</p>}
       {error && <p className="text-center text-red-600">{error}</p>}
 
-      {/* Grid of Slots (Layout Pilar) */}
+      {/* Grid of Slots (Layout flex-wrap dengan pilar) */}
       <div className="flex flex-wrap justify-center gap-4 p-4 bg-white rounded-lg shadow">
         
-        {/* Loop melalui setiap grup (pilar) */}
-        {slotGroups.map((group, groupIndex) => (
-          // Setiap grup adalah "pilar" yang dibungkus div
-          // 'mr-4' memberi jarak pilar
-          <div key={groupIndex} className="flex gap-4 mr-4"> 
-            
-            {/* Loop 1-3 slot di dalam grup */}
-            {group.map((slot) => (
-              <div key={slot._id} className="relative">
-                <button
-                  onClick={() => handleSlotClick(slot)}
-                  className={`w-16 h-16 rounded-lg text-white font-bold text-xl ${getStatusColor(slot.status)} transition-colors`}
-                >
-                  {slot.slot_code}
-                </button>
-                {/* Tombol Delete Kecil */}
-                <button
-                  onClick={() => handleDeleteSlot(slot._id, slot.slot_code)}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-gray-700 text-white rounded-full text-sm font-bold flex items-center justify-center hover:bg-red-600"
-                  title="Delete slot"
-                >
-                  &times;
-                </button>
-              </div>
-            ))}
+        {/* Loop 'slots' secara langsung */}
+        {slots.map((slot, index) => (
+          // (index + 1) % 3 === 0 berarti ini item ke-3, 6, 9, dst.
+          // Kita tambahkan 'mr-8' (margin-right) untuk pilar
+          <div 
+            key={slot._id} 
+            className={`relative ${(index + 1) % 3 === 0 ? 'mr-8' : ''}`}
+          >
+            <button
+              onClick={() => handleSlotClick(slot)}
+              className={`w-16 h-16 rounded-lg text-white font-bold text-xl ${getStatusColor(slot.status)} transition-colors`}
+            >
+              {slot.slot_code}
+            </button>
+            {/* Tombol Delete Kecil */}
+            <button
+              onClick={() => handleDeleteSlot(slot._id, slot.slot_code)}
+              className="absolute -top-2 -right-2 w-6 h-6 bg-gray-700 text-white rounded-full text-sm font-bold flex items-center justify-center hover:bg-red-600"
+              title="Delete slot"
+            >
+              &times;
+            </button>
           </div>
         ))}
         
-        {/* Tombol Add Slot (selalu di akhir) */}
+        {/* Tombol Add Slot (sebagai item flex biasa) */}
         <button
           onClick={handleAddSlot}
           className="w-16 h-16 rounded-lg bg-gray-200 text-gray-600 font-bold text-3xl flex items-center justify-center hover:bg-gray-300"
