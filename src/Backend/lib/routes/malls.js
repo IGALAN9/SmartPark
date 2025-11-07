@@ -2,7 +2,8 @@ import express from "express";
 import { Mall } from "../../Models/Mall.js";
 import { ParkingLot } from "../../Models/parkinglot.js";
 import { ParkingSlot } from "../../Models/parkingslot.js";
-import { isAdmin } from "../Middleware/auth.js";
+import { isAdmin, isLoggedIn } from "../Middleware/auth.js";
+
 import mongoose from "mongoose";
 
 const router = express.Router();
@@ -40,6 +41,45 @@ router.get("/", isAdmin, async (req, res) => {
     res.json(data);
   } catch (e) {
     res.status(500).json({ error: "Failed to fetch malls" });
+  }
+});
+
+// ----------------------------------------------------
+// BARU: PUBLIC GET /api/malls/public (Untuk User)
+// ----------------------------------------------------
+router.get("/public", isLoggedIn, async (req, res) => {
+  try {
+    // 1. Ambil SEMUA mall (tidak difilter by admin)
+    const malls = await Mall.find({}).sort({ name: 1 }).lean();
+
+    // 2. Logic sisanya SAMA dengan admin (meng-agregasi data)
+    const data = await Promise.all(malls.map(async (mall) => {
+      const lots = await ParkingLot.find({ mall: mall._id }).lean();
+      
+      const floors = await Promise.all(lots.map(async (lot) => {
+        const [total, available] = await Promise.all([
+          ParkingSlot.countDocuments({ lot: lot._id }),
+          ParkingSlot.countDocuments({ lot: lot._id, status: "Available" })
+        ]);
+        return { 
+          id: lot._id, 
+          name: lot.floor_level, 
+          available, 
+          total 
+        };
+      }));
+      
+      return {
+        id: mall._id,
+        name: mall.name,
+        address: mall.address,
+        floors: floors
+      };
+    }));
+
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: "Failed to fetch public malls" });
   }
 });
 
