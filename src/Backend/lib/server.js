@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import usersRouter from "./routes/users.js";
 import mallsRouter from "./routes/malls.js";
 import parkingLotsRouter from "./routes/parkingLots.js";
+import parkingSlotsRouter from "./routes/parkingSlots.js";
 import cookieParser from "cookie-parser";
 import { connectDB } from "./db.js";
 import { User } from "../Models/User.js";
@@ -32,6 +33,7 @@ app.prepare().then(async () => {
   server.use("/api/users", usersRouter);
   server.use("/api/malls", mallsRouter);
   server.use("/api/parking-lots", parkingLotsRouter);
+  server.use("/api/parking-slots", parkingSlotsRouter);
 
   // === API Routes ===
   server.get("/api/users", async (req, res) => {

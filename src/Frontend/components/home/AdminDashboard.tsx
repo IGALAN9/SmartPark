@@ -1,9 +1,11 @@
+// Frontend/app/components/AdminDashboard.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-import AddMallModal from "./admin/AddMallModal"; 
+import AddMallModal from "./admin/AddMallModal";
+import FloorDetailView from "./admin/FloorDetailView"; // Tampilan grid slot
 
-// Definisikan tipe data yang akan kita terima dari API
+// --- Tipe Data untuk Fitur Parkir ---
 type FloorData = {
   id: string;
   name: string;
@@ -18,7 +20,7 @@ type MallData = {
   floors: FloorData[];
 };
 
-// Props 'user' tetap ada dari file asli Anda
+// --- Props Asli ---
 type AdminDashboardProps = {
   user: {
     name: string;
@@ -26,20 +28,26 @@ type AdminDashboardProps = {
 };
 
 export default function AdminDashboard({ user }: AdminDashboardProps) {
+  // --- State untuk Fitur Parkir ---
+  const [viewingFloor, setViewingFloor] = useState<{
+    id: string;
+    mallName: string;
+    floorName: string;
+  } | null>(null);
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMallId, setEditingMallId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false); // BARU: State untuk disable tombol
-  // State untuk menampung data dari API
   const [malls, setMalls] = useState<MallData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fungsi untuk fetch data
+  // --- Fungsi API untuk Fitur Parkir ---
   const fetchMalls = async () => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/malls"); // Panggil API yang sudah kita buat
+      const res = await fetch("/api/malls"); // Panggil API admin
       if (!res.ok) {
         throw new Error("Gagal mengambil data. Pastikan Anda login sebagai Admin.");
       }
@@ -52,14 +60,16 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     }
   };
 
-  // Fetch data saat komponen pertama kali dimuat
   useEffect(() => {
-    fetchMalls();
-  }, []);
+    // Hanya fetch data mall jika kita TIDAK sedang melihat detail lantai
+    if (!viewingFloor) {
+      fetchMalls();
+    }
+  }, [viewingFloor]); // Re-fetch saat kembali dari detail view
 
   const handleAddMallSuccess = () => {
     setIsModalOpen(false);
-    fetchMalls(); // Ambil ulang data setelah berhasil menambah mall
+    fetchMalls(); // Ambil ulang data
     alert("Mall berhasil ditambahkan!");
   };
 
@@ -67,14 +77,10 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     if (!window.confirm(`Yakin ingin menghapus "${mallName}"?\nSEMUA lantai dan slot di dalamnya akan terhapus permanen.`)) {
       return;
     }
-
     setIsDeleting(true);
     try {
       const res = await fetch(`/api/malls/${mallId}`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal menghapus mall");
-      }
+      if (!res.ok) throw new Error("Gagal menghapus mall");
       alert(`"${mallName}" berhasil dihapus.`);
       fetchMalls(); // Refresh list
     } catch (e) {
@@ -84,21 +90,14 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     }
   };
 
-  // ----------------------------------------------------
-  // FUNGSI BARU: Hapus Floor (Lot)
-  // ----------------------------------------------------
   const handleDeleteFloor = async (floorId: string, floorName: string) => {
     if (!window.confirm(`Yakin ingin menghapus "${floorName}"?\nSEMUA slot di dalamnya akan terhapus permanen.`)) {
       return;
     }
-
     setIsDeleting(true);
     try {
       const res = await fetch(`/api/parking-lots/${floorId}`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Gagal menghapus lantai");
-      }
+      if (!res.ok) throw new Error("Gagal menghapus lantai");
       alert(`"${floorName}" berhasil dihapus.`);
       fetchMalls(); // Refresh list
     } catch (e) {
@@ -108,97 +107,203 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     }
   };
 
-  if (loading) return <div className="text-center p-8 text-lg">Memuat data parkir...</div>;
-  if (error) return <div className="text-center p-8 text-lg text-red-600">Error: {error}</div>;
+  const handleAutoAddFloor = async (mall: MallData) => {
+    // Kita gunakan state 'isDeleting' untuk menonaktifkan tombol
+    setIsDeleting(true); 
+    
+    // 1. Tentukan nama lantai baru secara otomatis
+    // Jika sudah ada "Floor 1", "Floor 2", maka lantai baru adalah "Floor 3"
+    const nextFloorNum = mall.floors.length + 1;
+    const newFloorName = `Floor ${nextFloorNum}`;
 
+    try {
+      // 2. Langsung panggil API
+      const res = await fetch("/api/parking-lots", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mallId: mall.id,
+          floorLevel: newFloorName
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        // Tangani jika nama duplikat (misal: admin hapus "Floor 2" lalu "Add Floor" lagi)
+        if (data.error && data.error.includes("already exists")) {
+          alert(`Gagal: Lantai dengan nama "${newFloorName}" sudah ada. Coba ubah nama lantai yang ada.`);
+        } else {
+          throw new Error(data.error || "Gagal menambahkan lantai");
+        }
+      } else {
+        // 3. Refresh list mall untuk melihat lantai baru (yang 0/0)
+        fetchMalls();
+      }
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Terjadi kesalahan");
+    } finally {
+      setIsDeleting(false); // Aktifkan kembali tombol
+    }
+  };
+
+  // ------------------------------------------------------------------
+  // --- A: TAMPILKAN DETAIL LANTAI (GRID SLOT) ---
+  // ------------------------------------------------------------------
+  if (viewingFloor) {
+    return (
+      <FloorDetailView 
+        floor={viewingFloor}
+        onBack={() => {
+          setViewingFloor(null); // Kembali ke list
+          // fetchMalls() akan otomatis ter-trigger oleh useEffect
+        }}
+      />
+    );
+  }
+
+  // ------------------------------------------------------------------
+  // --- B: TAMPILKAN DASHBOARD UTAMA (MALL LIST) ---
+  // ------------------------------------------------------------------
   return (
-    <div className="w-full max-w-4xl mx-auto py-8 px-4">
-      {/* Judul Halaman */}
-      <h2 className="text-3xl font-bold text-center text-indigo-600 mb-6">
-        Available Parking
-      </h2>
-
-      {/* Tombol Add Mall */}
-      <div className="text-center mb-8">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="px-6 py-3 bg-indigo-600 text-white rounded-full font-semibold shadow-lg hover:bg-indigo-700 transition-colors"
-        >
-          ADD MALL
-        </button>
+    <div className="w-full max-w-4xl mx-auto py-8 px-4 space-y-8">
+      
+      {/* --- Bagian Asli --- */}
+      <div className="text-center space-y-4">
+        <h1 className="text-3xl font-bold text-indigo-600">Admin Dashboard 🛠️</h1>
+        <p className="text-gray-600">
+          Selamat datang kembali,{" "}
+          <span className="font-semibold">{user.name}</span>!
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4">
+          <a
+            href="/admin/users"
+            className="px-5 py-2 bg-indigo-600 text-white rounded-full hover:opacity-90"
+          >
+            Kelola Pengguna
+          </a>
+          <a
+            href="/admin/reports"
+            className="px-5 py-2 bg-indigo-50 text-indigo-700 rounded-full hover:bg-indigo-100"
+          >
+            Lihat Laporan
+          </a>
+        </div>
       </div>
 
-      {/* Daftar Mall */}
-      <div className="space-y-6">
-        {malls.length === 0 && (
-          <p className="text-center text-gray-500">Belum ada mall terdaftar. Klik ADD MALL untuk memulai.</p>
-        )}
+      {/* --- Pemisah --- */}
+      <hr className="border-gray-300" />
 
-        {malls.map((mall) => (
-          <div key={mall.id} className="bg-white p-6 rounded-2xl shadow-md">
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center">
-              <div>
-                <h3 className="text-2xl font-bold text-indigo-700">{mall.name}</h3>
-                <p className="text-sm text-gray-500 mt-1 truncate max-w-md">{mall.address}</p>
-              </div>
-              <button 
-                onClick={() => setEditingMallId(editingMallId === mall.id ? null : mall.id)}
-                className="mt-4 sm:mt-0 px-5 py-2 bg-indigo-100 text-indigo-700 rounded-full font-medium text-sm hover:bg-indigo-200"
-              >
-                {editingMallId === mall.id ? "Close" : "Details>>>"}
-              </button>
-              {/* --- TOMBOL DELETE MALL BARU --- */}
-              <button
-                  onClick={() => handleDeleteMall(mall.id, mall.name)}
-                  disabled={isDeleting}
-                  className="px-5 py-2 bg-red-100 text-red-700 rounded-full font-medium text-sm hover:bg-red-200 disabled:opacity-50"
-               >
-                Delete
-              </button>
-            </div>
+      {/* --- Bagian Parkir Baru --- */}
+      <div>
+        <h2 className="text-3xl font-bold text-center text-indigo-600 mb-6">
+          Parking Management
+        </h2>
 
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="flex flex-wrap gap-x-6 gap-y-2">
-                {mall.floors.length > 0 ? mall.floors.map((floor) => (
-                  <span key={floor.id} className="font-medium text-gray-700">
-                    {floor.name} <b className="text-gray-900">{floor.available}/{floor.total}</b>
-                  </span>
-                )) : (
-                  <span className="text-sm text-gray-500">Belum ada lantai terdaftar.</span>
+        <div className="text-center mb-8">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-full font-semibold shadow-lg hover:bg-indigo-700 transition-colors"
+          >
+            ADD MALL
+          </button>
+        </div>
+
+        {/* --- Konten List Mall --- */}
+        {loading && <div className="text-center p-8 text-lg">Memuat data parkir...</div>}
+        {error && <div className="text-center p-8 text-lg text-red-600">Error: {error}</div>}
+        
+        {!loading && !error && (
+          <div className="space-y-6">
+            {malls.length === 0 && (
+              <p className="text-center text-gray-500">
+                Belum ada mall terdaftar. Klik ADD MALL untuk memulai.
+              </p>
+            )}
+
+            {malls.map((mall) => (
+              <div key={mall.id} className="bg-white p-6 rounded-2xl shadow-md">
+                {/* Header Mall */}
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center">
+                  <div>
+                    <h3 className="text-2xl font-bold text-indigo-700">{mall.name}</h3>
+                    <p className="text-sm text-gray-500 mt-1 truncate max-w-md">{mall.address}</p>
+                  </div>
+                  <div className="flex items-center gap-2 mt-4 sm:mt-0">
+                    <button 
+                      onClick={() => setEditingMallId(editingMallId === mall.id ? null : mall.id)}
+                      disabled={isDeleting}
+                      className="px-5 py-2 bg-indigo-100 text-indigo-700 rounded-full font-medium text-sm hover:bg-indigo-200 disabled:opacity-50"
+                    >
+                      {editingMallId === mall.id ? "Close" : "Details>>>"}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteMall(mall.id, mall.name)}
+                      disabled={isDeleting}
+                      className="px-5 py-2 bg-red-100 text-red-700 rounded-full font-medium text-sm hover:bg-red-200 disabled:opacity-50"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+
+                {/* Info Lantai Ringkas */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="flex flex-wrap gap-x-6 gap-y-2">
+                    {mall.floors.length > 0 ? mall.floors.map((floor) => (
+                      <span key={floor.id} className="font-medium text-gray-700">
+                        {floor.name} <b className="text-gray-900">{floor.available}/{floor.total}</b>
+                      </span>
+                    )) : (
+                      <span className="text-sm text-gray-500">Belum ada lantai terdaftar.</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Panel Edit/Delete Floor */}
+                {editingMallId === mall.id && (
+                  <div className="mt-4 pt-4 border-t border-indigo-200 bg-indigo-50 p-4 rounded-lg">
+                    {mall.floors.map((floor) => (
+                      <div key={floor.id} className="flex items-center justify-between mb-2">
+                        <span className="font-medium">{floor.name} ({floor.available}/{floor.total} slots)</span>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            onClick={() => setViewingFloor({ 
+                              id: floor.id, 
+                              mallName: mall.name, 
+                              floorName: floor.name 
+                            })}
+                            disabled={isDeleting}
+                            className="px-4 py-1 bg-white text-indigo-700 rounded-full text-sm shadow-sm hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            Edit Slots
+                          </button>
+                          <button
+                            onClick={() => handleDeleteFloor(floor.id, floor.name)}
+                            disabled={isDeleting}
+                            className="px-4 py-1 bg-white text-red-700 rounded-full text-sm shadow-sm hover:bg-red-100 disabled:opacity-50"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  {/* --- UPDATE TOMBOL "ADD FLOOR" --- */}
+                  <button 
+                    onClick={() => handleAutoAddFloor(mall)} // Panggil fungsi baru
+                    className="mt-3 w-full px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium hover:bg-indigo-700"
+                    disabled={isDeleting} // Disable saat proses berjalan
+                  >
+                    {isDeleting ? "Adding..." : "Add Floor"}
+                  </button>
+                  </div>
                 )}
               </div>
-            </div>
-
-            {/* Bagian Edit Floor */}
-            {editingMallId === mall.id && (
-              <div className="mt-4 pt-4 border-t border-indigo-200 bg-indigo-50 p-4 rounded-lg">
-                {mall.floors.map((floor) => (
-                  <div key={floor.id} className="flex items-center justify-between mb-2">
-                    <span className="font-medium">{floor.name} ({floor.available}/{floor.total} slots)</span>
-                    <button className="px-4 py-1 bg-white text-indigo-700 rounded-full text-sm shadow-sm hover:bg-gray-50">
-                      Edit
-                    </button>
-                    {/* --- TOMBOL DELETE FLOOR BARU --- */}
-                      <button
-                        onClick={() => handleDeleteFloor(floor.id, floor.name)}
-                        disabled={isDeleting}
-                        className="px-4 py-1 bg-white text-red-700 rounded-full text-sm shadow-sm hover:bg-red-100 disabled:opacity-50"
-                      >
-                        Delete
-                      </button>
-                  </div>
-                ))}
-                {/* TODO: Buat logika Add Floor */}
-                <button className="mt-3 w-full px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium hover:bg-indigo-700">
-                  Add Floor
-                </button>
-              </div>
-            )}
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
-      {/* Modal Add Mall (akan muncul jika isModalOpen true) */}
+      {/* --- Modal Add Mall --- */}
       {isModalOpen && (
         <AddMallModal 
           onClose={() => setIsModalOpen(false)} 
