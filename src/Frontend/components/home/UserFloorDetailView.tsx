@@ -52,7 +52,6 @@ export default function UserFloorDetailView({ floor, user, onBack }: FloorDetail
     }
   };
 
-  // Ambil data saat komponen pertama kali dimuat
   useEffect(() => {
     fetchSlots();
   }, [floor.id]);
