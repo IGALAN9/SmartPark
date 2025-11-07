@@ -10,25 +10,22 @@ const router = express.Router();
 // Middleware untuk cek kepemilikan lot (lantai)
 const isLotOwner = async (req, res, next) => {
   try {
-    // Ambil lotId dari query (GET) atau body (POST)
     const lotId = req.query.lotId || req.body.lotId;
     if (!lotId) return res.status(400).json({ error: "Lot ID required" });
 
     const lot = await ParkingLot.findById(lotId);
     if (!lot) return res.status(404).json({ error: "Parking lot not found" });
 
-    // Cek apakah admin yg login adalah pemilik mall dari lot ini
     const mall = await Mall.findOne({ _id: lot.mall, admin: req.user._id });
     if (!mall) return res.status(403).json({ error: "Forbidden: Not owner" });
     
-    req.lot = lot; // Simpan lot di request untuk dipakai di handler
+    req.lot = lot;
     next();
   } catch {
     res.status(500).json({ error: "Middleware error" });
   }
 };
 
-// GET /api/parking-slots?lotId=...
 // Mendapatkan semua slot untuk 1 lantai (lot)
 router.get("/", isAdmin, isLotOwner, async (req, res) => {
   try {
@@ -39,23 +36,19 @@ router.get("/", isAdmin, isLotOwner, async (req, res) => {
   }
 });
 
-// GET /api/parking-slots/public?lotId=...
 // Mendapatkan semua slot untuk user (memerlukan login)
 router.get("/public", isLoggedIn, async (req, res) => {
   try {
     const { lotId } = req.query;
     if (!lotId) return res.status(400).json({ error: "Lot ID required" });
 
-    // Cukup cek lot-nya ada
     const lot = await ParkingLot.findById(lotId);
     if (!lot) return res.status(404).json({ error: "Parking lot not found" });
 
     const slots = await ParkingSlot.find({ lot: lot._id }).sort({ slot_code: 1 }).lean();
     
-    // Tambahkan info apakah slot ini di-book oleh user yg sedang login
     const slotsWithMyStatus = slots.map(slot => ({
       ...slot,
-      // 'booked_by' akan null atau ObjectId. Kita cek kesamaannya.
       isBookedByMe: slot.booked_by ? slot.booked_by.equals(req.user._id) : false
     }));
 
@@ -65,13 +58,11 @@ router.get("/public", isLoggedIn, async (req, res) => {
   }
 });
 
-// POST /api/parking-slots
 // Menambahkan slot baru ke lantai (tombol "+")
 router.post("/", isAdmin, isLotOwner, async (req, res) => {
   try {
-    // Logic untuk auto-increment slot_code (misal: "01", "02", ...)
     const lastSlot = await ParkingSlot.findOne({ lot: req.lot._id })
-      .sort({ createdAt: -1 }); // Ambil yang terakhir dibuat
+      .sort({ createdAt: -1 }); 
 
     const lastNum = lastSlot ? parseInt(lastSlot.slot_code.match(/\d+/g)?.pop() || '0', 10) : 0;
     
@@ -88,7 +79,6 @@ router.post("/", isAdmin, isLotOwner, async (req, res) => {
   }
 });
 
-// PATCH /api/parking-slots/:id/book
 // User melakukan booking
 router.patch("/:id/book", isLoggedIn, async (req, res) => {
   try {
@@ -100,8 +90,14 @@ router.patch("/:id/book", isLoggedIn, async (req, res) => {
       return res.status(409).json({ error: "Slot is not available" });
     }
 
-    slot.status = "Booked"; // Ubah status
-    slot.booked_by = req.user._id; // Catat siapa yg book
+    // Cek apakah user ini (req.user._id) sudah punya booking lain
+    const existingBooking = await ParkingSlot.findOne({ booked_by: req.user._id });
+    if (existingBooking) {
+      return res.status(409).json({ error: "You can only book one slot at a time." });
+    }
+
+    slot.status = "Booked"; 
+    slot.booked_by = req.user._id;
     await slot.save();
 
     res.json(slot);
@@ -110,15 +106,12 @@ router.patch("/:id/book", isLoggedIn, async (req, res) => {
   }
 });
 
-// DELETE /api/parking-slots/:id
 // Menghapus 1 slot
 router.delete("/:id", isAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.isValidObjectId(id)) return res.status(400).json({ error: "Invalid ID" });
 
-    // TODO: Cek kepemilikan slot jika perlu (lebih aman)
-    
     const deleted = await ParkingSlot.findByIdAndDelete(id);
     if (!deleted) return res.status(404).json({ error: "Slot not found" });
     
@@ -128,19 +121,17 @@ router.delete("/:id", isAdmin, async (req, res) => {
   }
 });
 
-// PATCH /api/parking-slots/:id/status
+
 // Mengubah status slot (dari modal admin)
 router.patch("/:id/status", isAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body; // "Available", "Booked", "Occupied"
+    const { status } = req.body; 
     
     if (!["Available", "Booked", "Occupied"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
     
-    // TODO: Cek kepemilikan slot jika perlu (lebih aman)
-
     const updated = await ParkingSlot.findByIdAndUpdate(
       id, 
       { status }, 
@@ -154,7 +145,6 @@ router.patch("/:id/status", isAdmin, async (req, res) => {
   }
 });
 
-// PATCH /api/parking-slots/:id/unbook
 // User membatalkan booking
 router.patch("/:id/unbook", isLoggedIn, async (req, res) => {
   try {

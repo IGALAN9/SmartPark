@@ -1,11 +1,9 @@
-// Frontend/app/components/AdminDashboard.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import AddMallModal from "./admin/AddMallModal";
-import FloorDetailView from "./admin/FloorDetailView"; // Tampilan grid slot
+import FloorDetailView from "./admin/FloorDetailView"; 
 
-// --- Tipe Data untuk Fitur Parkir ---
 type FloorData = {
   id: string;
   name: string;
@@ -20,7 +18,6 @@ type MallData = {
   floors: FloorData[];
 };
 
-// --- Props Asli ---
 type AdminDashboardProps = {
   user: {
     name: string;
@@ -28,7 +25,6 @@ type AdminDashboardProps = {
 };
 
 export default function AdminDashboard({ user }: AdminDashboardProps) {
-  // --- State untuk Fitur Parkir ---
   const [viewingFloor, setViewingFloor] = useState<{
     id: string;
     mallName: string;
@@ -47,7 +43,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/malls"); // Panggil API admin
+      const res = await fetch("/api/malls"); 
       if (!res.ok) {
         throw new Error("Gagal mengambil data. Pastikan Anda login sebagai Admin.");
       }
@@ -60,16 +56,16 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     }
   };
 
+  // Fetch data mall saat komponen dimount
   useEffect(() => {
-    // Hanya fetch data mall jika kita TIDAK sedang melihat detail lantai
     if (!viewingFloor) {
       fetchMalls();
     }
-  }, [viewingFloor]); // Re-fetch saat kembali dari detail view
+  }, [viewingFloor]); 
 
   const handleAddMallSuccess = () => {
     setIsModalOpen(false);
-    fetchMalls(); // Ambil ulang data
+    fetchMalls(); 
     alert("Mall berhasil ditambahkan!");
   };
 
@@ -90,6 +86,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     }
   };
 
+  // Fungsi untuk menghapus lantai
   const handleDeleteFloor = async (floorId: string, floorName: string) => {
     if (!window.confirm(`Yakin ingin menghapus "${floorName}"?\nSEMUA slot di dalamnya akan terhapus permanen.`)) {
       return;
@@ -99,7 +96,7 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
       const res = await fetch(`/api/parking-lots/${floorId}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Gagal menghapus lantai");
       alert(`"${floorName}" berhasil dihapus.`);
-      fetchMalls(); // Refresh list
+      fetchMalls(); 
     } catch (e) {
       alert(e instanceof Error ? e.message : "Terjadi kesalahan");
     } finally {
@@ -107,17 +104,14 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
     }
   };
 
+  // Fungsi untuk menambahkan lantai dengan nama otomatis
   const handleAutoAddFloor = async (mall: MallData) => {
-    // Kita gunakan state 'isDeleting' untuk menonaktifkan tombol
     setIsDeleting(true); 
     
-    // 1. Tentukan nama lantai baru secara otomatis
-    // Jika sudah ada "Floor 1", "Floor 2", maka lantai baru adalah "Floor 3"
     const nextFloorNum = mall.floors.length + 1;
     const newFloorName = `Floor ${nextFloorNum}`;
 
     try {
-      // 2. Langsung panggil API
       const res = await fetch("/api/parking-lots", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -136,38 +130,32 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
           throw new Error(data.error || "Gagal menambahkan lantai");
         }
       } else {
-        // 3. Refresh list mall untuk melihat lantai baru (yang 0/0)
+        // Refresh list mall untuk melihat lantai baru 
         fetchMalls();
       }
     } catch (e) {
       alert(e instanceof Error ? e.message : "Terjadi kesalahan");
     } finally {
-      setIsDeleting(false); // Aktifkan kembali tombol
+      setIsDeleting(false); 
     }
   };
 
-  // ------------------------------------------------------------------
-  // --- A: TAMPILKAN DETAIL LANTAI (GRID SLOT) ---
-  // ------------------------------------------------------------------
+
   if (viewingFloor) {
     return (
       <FloorDetailView 
         floor={viewingFloor}
         onBack={() => {
-          setViewingFloor(null); // Kembali ke list
-          // fetchMalls() akan otomatis ter-trigger oleh useEffect
+          setViewingFloor(null); 
         }}
       />
     );
   }
 
-  // ------------------------------------------------------------------
-  // --- B: TAMPILKAN DASHBOARD UTAMA (MALL LIST) ---
-  // ------------------------------------------------------------------
+  // --- Render Dashboard Admin ---
   return (
     <div className="w-full max-w-4xl mx-auto py-8 px-4 space-y-8">
       
-      {/* --- Bagian Asli --- */}
       <div className="text-center space-y-4">
         <h1 className="text-3xl font-bold text-indigo-600">Admin Dashboard 🛠️</h1>
         <p className="text-gray-600">
@@ -184,10 +172,8 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         </div>
       </div>
 
-      {/* --- Pemisah --- */}
       <hr className="border-gray-300" />
 
-      {/* --- Bagian Parkir Baru --- */}
       <div>
         <h2 className="text-3xl font-bold text-center text-indigo-600 mb-6">
           Parking Management
@@ -202,7 +188,6 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
           </button>
         </div>
 
-        {/* --- Konten List Mall --- */}
         {loading && <div className="text-center p-8 text-lg">Memuat data parkir...</div>}
         {error && <div className="text-center p-8 text-lg text-red-600">Error: {error}</div>}
         
@@ -216,7 +201,6 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
 
             {malls.map((mall) => (
               <div key={mall.id} className="bg-white p-6 rounded-2xl shadow-md">
-                {/* Header Mall */}
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center">
                   <div>
                     <h3 className="text-2xl font-bold text-indigo-700">{mall.name}</h3>
@@ -240,7 +224,6 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                   </div>
                 </div>
 
-                {/* Info Lantai Ringkas */}
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <div className="flex flex-wrap gap-x-6 gap-y-2">
                     {mall.floors.length > 0 ? mall.floors.map((floor) => (
@@ -253,7 +236,6 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                   </div>
                 </div>
 
-                {/* Panel Edit/Delete Floor */}
                 {editingMallId === mall.id && (
                   <div className="mt-4 pt-4 border-t border-indigo-200 bg-indigo-50 p-4 rounded-lg">
                     {mall.floors.map((floor) => (
@@ -281,11 +263,10 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
                         </div>
                       </div>
                     ))}
-                  {/* --- UPDATE TOMBOL "ADD FLOOR" --- */}
                   <button 
-                    onClick={() => handleAutoAddFloor(mall)} // Panggil fungsi baru
+                    onClick={() => handleAutoAddFloor(mall)} 
                     className="mt-3 w-full px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium hover:bg-indigo-700"
-                    disabled={isDeleting} // Disable saat proses berjalan
+                    disabled={isDeleting} 
                   >
                     {isDeleting ? "Adding..." : "Add Floor"}
                   </button>
@@ -297,7 +278,6 @@ export default function AdminDashboard({ user }: AdminDashboardProps) {
         )}
       </div>
 
-      {/* --- Modal Add Mall --- */}
       {isModalOpen && (
         <AddMallModal 
           onClose={() => setIsModalOpen(false)} 

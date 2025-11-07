@@ -24,7 +24,6 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔒 Hash password otomatis sebelum disimpan
 UserSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
     this.password = await bcrypt.hash(this.password, 10);
@@ -32,10 +31,8 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
-// 🧮 Auto increment user_id setiap kali buat user baru
 UserSchema.plugin(AutoIncrement, { inc_field: "user_id" });
 
-// Hapus password dari output JSON
 UserSchema.set("toJSON", {
   transform: (_doc, ret) => {
     delete ret.password;

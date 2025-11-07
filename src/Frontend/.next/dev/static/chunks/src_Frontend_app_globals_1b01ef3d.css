@@ -652,6 +652,12 @@
     gap: calc(var(--spacing) * 6);
   }
 
+  :where(.space-y-3 > :not(:last-child)) {
+    --tw-space-y-reverse: 0;
+    margin-block-start: calc(calc(var(--spacing) * 3) * var(--tw-space-y-reverse));
+    margin-block-end: calc(calc(var(--spacing) * 3) * calc(1 - var(--tw-space-y-reverse)));
+  }
+
   :where(.space-y-4 > :not(:last-child)) {
     --tw-space-y-reverse: 0;
     margin-block-start: calc(calc(var(--spacing) * 4) * var(--tw-space-y-reverse));
@@ -798,10 +804,6 @@
 
   .bg-red-100 {
     background-color: var(--color-red-100);
-  }
-
-  .bg-red-500 {
-    background-color: var(--color-red-500);
   }
 
   .bg-red-600 {
@@ -1028,6 +1030,10 @@
   .antialiased {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  .opacity-30 {
+    opacity: .3;
   }
 
   .opacity-70 {

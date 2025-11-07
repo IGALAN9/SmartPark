@@ -7,8 +7,7 @@ import mongoose from "mongoose";
 
 const router = express.Router();
 
-// POST /api/parking-lots (Hanya Admin)
-// Membuat "lantai" baru di dalam mall
+// Membuat "lantai" baru di dalam mall (Hanya Admin)
 router.post("/", isAdmin, async (req, res) => {
   try {
     const { mallId, floorLevel } = req.body;
@@ -34,10 +33,8 @@ router.post("/", isAdmin, async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
-// KODE BARU: DELETE /api/parking-lots/:id
-// Menghapus Lot (Lantai) DAN semua Slot di dalamnya
-// ----------------------------------------------------
+
+// Menghapus Lot (Lantai) DAN semua Slot di dalamnya (Hanya Admin)
 router.delete("/:id", isAdmin, async (req, res) => {
   try {
     const { id } = req.params; 

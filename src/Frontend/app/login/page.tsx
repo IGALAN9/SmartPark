@@ -7,7 +7,7 @@ import Navbar from "../../components/Navbar";
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState(null); // Ganti `user` jadi `nama`
+  const [name, setName] = useState(null); 
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const router = useRouter();

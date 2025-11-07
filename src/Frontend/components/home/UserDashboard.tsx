@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import UserFloorDetailView from "./UserFloorDetailView"; 
 
-// Tipe data (sama seperti admin)
 type FloorData = {
   id: string;
   name: string;
@@ -17,17 +16,17 @@ type MallData = {
   floors: FloorData[];
 };
 type UserProps = {
-  _id: string; // Pastikan user object punya _id
+  _id: string; 
   name: string;
 };
 
-// Props 'user' dari file asli Anda
+
 type UserDashboardProps = {
   user: UserProps;
 };
 
+  // STATE UNTUK NAVIGASI
 export default function UserDashboard({ user }: UserDashboardProps) {
-  // 2. STATE UNTUK NAVIGASI
   const [viewingFloor, setViewingFloor] = useState<{
     id: string;
     mallName: string;
@@ -43,7 +42,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/malls/public"); // Panggil API publik
+      const res = await fetch("/api/malls/public");
       if (!res.ok) throw new Error("Gagal mengambil data parkir.");
       const data = await res.json();
       setMalls(data);
@@ -54,14 +53,14 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     }
   };
 
+  // FETCH DATA SAAT KEMBALI DARI DETAIL VIEW
   useEffect(() => {
-    // 3. FETCH DATA SAAT KEMBALI DARI DETAIL VIEW
     if (!viewingFloor) {
         fetchPublicMalls();
     }
   }, [viewingFloor]);
 
-  // 4. JIKA USER KLIK LANTAI, TAMPILKAN DETAIL VIEW
+  // JIKA USER KLIK LANTAI, TAMPILKAN DETAIL VIEW
   if (viewingFloor) {
     return (
       <UserFloorDetailView
@@ -72,7 +71,7 @@ export default function UserDashboard({ user }: UserDashboardProps) {
     );
   }
 
-  // 5. TAMPILKAN DASHBOARD UTAMA (MALL LIST)
+  // TAMPILKAN DASHBOARD UTAMA (MALL LIST)
   if (loading) return <div className="text-center p-8 text-lg">Mencari parkir tersedia...</div>;
   if (error) return <div className="text-center p-8 text-lg text-red-600">Error: {error}</div>;
 

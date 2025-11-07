@@ -35,7 +35,7 @@ router.post("/login", async (req, res) => {
     setUidCookie(res, user._id); 
     const json = user.toJSON(); delete json.password;
     res.json({ ok: true, user: json });
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Login failed" });
   }
 });
@@ -77,7 +77,7 @@ router.get("/", async (req, res) => {
     ]);
 
     res.json({ page, limit, total, items });
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Failed to list users" });
   }
 });
@@ -97,7 +97,7 @@ router.get("/:id", async (req, res) => {
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Failed to get user" });
   }
 });
@@ -120,7 +120,6 @@ router.post("/", async (req, res) => {
       role: sanitizeRole(role),
     });
 
-    // optional: auto-login setelah register
     setUidCookie(res, created._id);
     res.status(201).json({ ok: true, user: created.toJSON() });
   } catch (e) {
@@ -151,7 +150,7 @@ router.patch("/:id", async (req, res) => {
     if (!updated) return res.status(404).json({ error: "User not found" });
 
     res.json(updated);
-  } catch (e) {
+  } catch {
     res.status(400).json({ error: "Failed to update user" });
   }
 });
@@ -168,7 +167,7 @@ router.delete("/:id", async (req, res) => {
       res.clearCookie("uid", { path: "/" });
     }
     res.json({ ok: true });
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: "Failed to delete user" });
   }
 });

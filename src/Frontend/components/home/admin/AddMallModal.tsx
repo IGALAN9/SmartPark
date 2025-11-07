@@ -13,13 +13,13 @@ export default function AddMallModal({ onClose, onSuccess }: AddMallModalProps) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Fungsi untuk menangani submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      // Panggil API yang sudah kita buat
       const res = await fetch("/api/malls", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -31,7 +31,7 @@ export default function AddMallModal({ onClose, onSuccess }: AddMallModalProps) 
         throw new Error(data.error || "Gagal menambahkan mall");
       }
       
-      onSuccess(); // Tutup modal dan refresh data di parent
+      onSuccess(); 
 
     } catch (e) {
       setError(e instanceof Error ? e.message : "Terjadi kesalahan");
@@ -41,10 +41,8 @@ export default function AddMallModal({ onClose, onSuccess }: AddMallModalProps) 
   };
 
   return (
-    // Backdrop
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       
-      {/* Modal Content */}
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
         <h3 className="text-2xl font-bold text-center text-indigo-600 mb-6">
           ADD MALL

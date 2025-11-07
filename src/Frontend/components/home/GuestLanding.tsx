@@ -5,7 +5,7 @@ export default function GuestLanding() {
         SMARTPARK
       </h1>
       <p className="text-gray-600 text-lg">
-        Temukan pengalaman parkir cerdas bersama SmartPark 🚗✨
+        Temukan pengalaman parkir cerdas bersama SmartPark 
       </p>
       <div className="flex items-center justify-center gap-3 mt-4">
         <a

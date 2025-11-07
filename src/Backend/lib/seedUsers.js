@@ -11,15 +11,14 @@ const seedData = async () => {
   try {
     await connectDB();
 
-    // 1. hapus dulu data lama
+    // Hapus semua data lama
     await User.deleteMany({});
-    // HAPUS DATA MODEL BARU
     await Mall.deleteMany({});
     await ParkingLot.deleteMany({});
     await ParkingSlot.deleteMany({});
     console.log("Semua data lama dihapus.");
 
-    // 2. buat data user
+    //Buat data User
     const users = await User.create([
       { name: "Admin Utama", email: "admin@example.com", password: "admin123", role: "admin" },
       { name: "Galang Pratama", email: "galang@example.com", password: "galang123", role: "user" },
@@ -30,7 +29,7 @@ const seedData = async () => {
     // Ambil ID admin
     const adminUser = users.find(u => u.role === 'admin');
 
-    // 3. Buat data Mall
+    // Buat data Mall
     const mall1 = await Mall.create({
       name: "MALL 1",
       address: "Jl. Raya SmartPark No. 1, Jakarta",
@@ -38,7 +37,7 @@ const seedData = async () => {
     });
     console.log("Data Mall 1 ditambahkan.");
 
-    // 4. Buat data ParkingLot (Lantai) untuk Mall 1
+    // Buat data ParkingLot (Lantai) untuk Mall 1
     const floor1 = await ParkingLot.create({
       mall: mall1._id,
       floor_level: "Floor 1"
@@ -49,7 +48,7 @@ const seedData = async () => {
     });
     console.log("Data Lantai untuk Mall 1 ditambahkan.");
 
-    // 5. Buat data ParkingSlot untuk Floor 1
+    //Buat data ParkingSlot untuk Floor 1
     const floor1Slots = [];
     for (let i = 1; i <= 27; i++) {
       floor1Slots.push({
@@ -59,25 +58,24 @@ const seedData = async () => {
       });
     }
     await ParkingSlot.create(floor1Slots);
-    // Set 4 slot di Floor 1 sebagai Occupied (23/27)
     await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A01" }, { status: "Occupied", booked_by: users[1]._id });
     await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A02" }, { status: "Occupied", booked_by: users[2]._id });
     await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A03" }, { status: "Reserved" });
     await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A04" }, { status: "Occupied" });
 
-    // 6. Buat data ParkingSlot untuk Floor 2 (Semua penuh)
+    // Buat data ParkingSlot untuk Floor 2 (Semua penuh)
     const floor2Slots = [];
     for (let i = 1; i <= 27; i++) {
       floor2Slots.push({
         lot: floor2._id,
         slot_code: `B${String(i).padStart(2, '0')}`,
-        status: "Occupied" // Semua penuh
+        status: "Occupied" 
       });
     }
     await ParkingSlot.create(floor2Slots);
     console.log("Data Slot Parkir ditambahkan.");
 
-    // 7. Buat Mall 2 (tanpa lantai)
+    // Buat Mall 2 (tanpa lantai)
     await Mall.create({
       name: "MALL 2",
       address: "Jl. Parkir Cerdas No. 2, Bandung",

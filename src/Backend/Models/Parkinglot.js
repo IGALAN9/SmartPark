@@ -7,7 +7,6 @@ const ParkingLotSchema = new mongoose.Schema(
       ref: "Mall",
       required: true,
     },
-    // Misal: "Floor 1", "P1", "Basement 2"
     floor_level: { type: String, required: true },
   },
   { 

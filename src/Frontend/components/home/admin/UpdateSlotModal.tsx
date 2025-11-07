@@ -11,13 +11,13 @@ type Slot = {
 type UpdateSlotModalProps = {
   slot: Slot;
   onClose: () => void;
-  onSuccess: () => void; // Untuk me-refresh grid
+  onSuccess: () => void; 
 };
 
 export default function UpdateSlotModal({ slot, onClose, onSuccess }: UpdateSlotModalProps) {
   const [loading, setLoading] = useState(false);
 
-  // Panggil API PATCH /api/parking-slots/:id/status
+  // Fungsi untuk mengupdate status slot
   const handleUpdate = async (newStatus: Slot["status"]) => {
     if (slot.status === newStatus) {
       onClose();
@@ -37,14 +37,13 @@ export default function UpdateSlotModal({ slot, onClose, onSuccess }: UpdateSlot
         throw new Error(data.error || "Gagal update status");
       }
       
-      onSuccess(); // Panggil onSuccess untuk refresh & tutup
+      onSuccess(); 
     } catch (e) {
       alert(e instanceof Error ? e.message : "Terjadi kesalahan");
-      setLoading(false); // Tetap buka modal jika error
+      setLoading(false); 
     }
   };
 
-  // Memberi warna latar modal
   const getStatusColorClass = () => {
     switch (slot.status) {
       case "Available": return "bg-green-600";

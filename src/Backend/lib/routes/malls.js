@@ -8,8 +8,7 @@ import mongoose from "mongoose";
 
 const router = express.Router();
 
-// GET /api/malls (Untuk Admin)
-// Mengambil semua data mall, lantai, dan slot
+// Mengambil semua data mall, lantai, dan slot (Untuk Admin)
 router.get("/", isAdmin, async (req, res) => {
   try {
     const malls = await Mall.find({ admin: req.user._id }).sort({ name: 1 }).lean();
@@ -44,15 +43,11 @@ router.get("/", isAdmin, async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
-// BARU: PUBLIC GET /api/malls/public (Untuk User)
-// ----------------------------------------------------
+// untuk user biasa (public)
 router.get("/public", isLoggedIn, async (req, res) => {
   try {
-    // 1. Ambil SEMUA mall (tidak difilter by admin)
     const malls = await Mall.find({}).sort({ name: 1 }).lean();
 
-    // 2. Logic sisanya SAMA dengan admin (meng-agregasi data)
     const data = await Promise.all(malls.map(async (mall) => {
       const lots = await ParkingLot.find({ mall: mall._id }).lean();
       
@@ -83,7 +78,6 @@ router.get("/public", isLoggedIn, async (req, res) => {
   }
 });
 
-// POST /api/malls (Hanya Admin)
 // Membuat Mall baru
 router.post("/", isAdmin, async (req, res) => {
   try {
@@ -107,10 +101,7 @@ router.post("/", isAdmin, async (req, res) => {
   }
 });
 
-// ----------------------------------------------------
-// KODE BARU: DELETE /api/malls/:id
 // Menghapus Mall DAN semua Lot + Slot di dalamnya
-// ----------------------------------------------------
 router.delete("/:id", isAdmin, async (req, res) => {
   try {
     const { id } = req.params;

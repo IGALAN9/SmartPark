@@ -7,11 +7,9 @@ const ParkingSlotSchema = new mongoose.Schema(
       ref: "ParkingLot",
       required: true,
     },
-    // Misal: "01", "02", "A01"
     slot_code: { type: String, required: true }, 
     status: {
       type: String,
-      // Status ini sesuai dengan desain Anda
       enum: ["Available", "Booked", "Occupied"], 
       default: "Available",
     },
@@ -24,7 +22,6 @@ const ParkingSlotSchema = new mongoose.Schema(
   { 
     timestamps: true, 
     indexes: [
-      // Slot code harus unik per 'Lot' (lantai)
       { fields: { lot: 1, slot_code: 1 }, unique: true } 
     ]
   }
