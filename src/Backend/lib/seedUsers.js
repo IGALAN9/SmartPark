@@ -57,6 +57,7 @@ const seedData = async () => {
         status: "Available"
       });
     }
+    
     await ParkingSlot.create(floor1Slots);
     await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A01" }, { status: "Occupied" });
     await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A02" }, { status: "Occupied"});
@@ -69,7 +70,7 @@ const seedData = async () => {
       floor2Slots.push({
         lot: floor2._id,
         slot_code: `B${String(i).padStart(2, '0')}`,
-        status: "Occupied" 
+        status: "Available"
       });
     }
     await ParkingSlot.create(floor2Slots);
