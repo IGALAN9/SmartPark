@@ -3,7 +3,7 @@ import { connectDB } from "./db.js";
 import { User } from "../Models/User.js";
 import { Mall } from "../Models/Mall.js";
 import { ParkingLot } from "../Models/parkinglot.js";
-import { ParkingSlot } from "../Models/parkingslot.js";
+import { ParkingSlot } from "../Models/ParkingSlot.js";
 
 dotenv.config();
 
@@ -58,9 +58,9 @@ const seedData = async () => {
       });
     }
     await ParkingSlot.create(floor1Slots);
-    await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A01" }, { status: "Occupied", booked_by: users[1]._id });
-    await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A02" }, { status: "Occupied", booked_by: users[2]._id });
-    await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A03" }, { status: "Reserved" });
+    await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A01" }, { status: "Occupied" });
+    await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A02" }, { status: "Occupied"});
+    await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A03" }, { status: "Booked" });
     await ParkingSlot.updateOne({ lot: floor1._id, slot_code: "A04" }, { status: "Occupied" });
 
     // Buat data ParkingSlot untuk Floor 2 (Semua penuh)

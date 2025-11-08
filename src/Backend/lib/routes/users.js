@@ -3,6 +3,7 @@ import validator from "validator";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import { User } from "../../Models/User.js";
+import { ParkingSlot } from "../../Models/ParkingSlot.js";
 
 const router = express.Router();
 const isNumeric = (v) => /^\d+$/.test(String(v));
@@ -160,14 +161,27 @@ router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const query = isNumeric(id) ? { user_id: Number(id) } : { _id: id };
+    
     const deleted = await User.findOneAndDelete(query);
     if (!deleted) return res.status(404).json({ error: "User not found" });
+
+    await ParkingSlot.updateMany(
+      { booked_by: deleted._id },
+      { 
+        $set: { 
+          status: "Available", 
+          booked_by: null     
+        } 
+      }
+    );
 
     if (req.cookies?.uid && String(req.cookies.uid) === String(deleted._id)) {
       res.clearCookie("uid", { path: "/" });
     }
+    
     res.json({ ok: true });
-  } catch {
+  } catch (e) {
+    console.error("Delete user error:", e); //
     res.status(500).json({ error: "Failed to delete user" });
   }
 });
